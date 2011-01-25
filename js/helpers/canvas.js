@@ -1,67 +1,101 @@
 $(function() {
+
 	function sketchProc(processing) {
+		/* GLOBAL SKETCH VARS */
 		var P = processing;
 		var b = P.PImage;
 		var bgcolor = 222;
+		var circle;
 		
-		var cX = 0;
-		var cY = 0;
-		var cRadius = 40;
-		
-		var hover = false;
-		
-		//DEFAULT SETUP FUNCTION
+		/* DEFAULT SETUP FUNCTION */
 		P.setup = function() {
 			P.size(1024, 768);
-			cX = P.width / 2;  
-  			cY = P.height / 2;
   			// @pjs preload must be used to preload the image
    			/* @pjs preload="/images/CN70_360Tour_025T.jpg"; */
     		b = P.loadImage("/images/CN70_360Tour_025T.jpg");
 		}
-		//DEFAULT DRAW FUNCTION (loops every 60sec by default)	 
-		P.draw = function() {	
-			// RESETS THE BACKGROUND
+		
+		/* SKETCH OBJECTS */
+		function CircleObj() {
+			var self = this;
+			this.cRadius = 40;
+			this.hover = false;
+			this.cX = 0;
+			this.cY = 0;
+			
+			this.init = function() {
+				self.display();
+				self.detectHover();
+			}
+			
+			this.display = function() {
+				//Draw a circle
+				P.strokeWeight(2);
+				P.ellipse(self.cX, self.cY, self.cRadius, self.cRadius);
+			}
+			
+			this.detectHover = function() {
+				if (P.mouseX > self.cX-self.cRadius && P.mouseX < self.cX+self.cRadius && P.mouseY > self.cY-self.cRadius && P.mouseY < self.cY+self.cRadius) {
+					self.mouseOver();
+				} else {
+					self.mouseOut();
+				}
+			}
+			
+			this.mouseOver = function() {
+				console.log('mouseover');
+			}
+			
+			this.mouseOut = function() {
+				console.log('mouseout');
+			}
+			
+			this.init();
+		}
+		circle = new CircleObj();
+		/* DEFAULT DRAW FUNCTION (loops every 60sec by default) */	 
+		P.draw = function() {
+			circle.display();
+			// Reset bg
 			P.background(bgcolor);
+			//Detect hover
 			
-			//DETECT HOVER
-			if (P.mouseX > cX-cRadius && P.mouseX < cX+cRadius && P.mouseY > cY-cRadius && P.mouseY < cY+cRadius) {
-				hover = true;
-			}
-			
-			if (hover) {
-				if (cRadius < 70) {
-					cRadius = cRadius + 1;
-				} else {
-					cRadius = 70;
-				}
-			} else {
-				if (cRadius >= 70) {
-					cRadius = cRadius - 1;
-				} else {
-					cRadius = 40;
-				}
-			}
 			
 			/*
-P.mouseDragged = function() {
+if (hover) {
+				if (cRadius <= 70) {
+					cRadius = cRadius + 4;
+				}
+			} else {
+				if (cRadius >= 40) {
+					cRadius = cRadius - 1;
+				}
+			}
+*/
+			
+			P.mouseDragged = function() {
 				cX = P.mouseX;
 				cY = P.mouseY;
 			}
-*/
+			
+			P.mouseClicked = function() {
+				if (hover) {
+					alert('clicked');
+				}
+			}
 			//cRadius = cX * 1;
-			var stroke = cY / 2;
+			/* var stroke = cY / 2; */
 		
 			//Draw a circle
-			P.strokeWeight(2);
-			P.ellipse(cX, cY, cRadius, cRadius);
+			//P.strokeWeight(2);
+			//P.ellipse(cX, cY, cRadius, cRadius);
 			
 			//Draw image
 			P.tint(255, 128);
    			P.image(b, 10, 10);
     		P.image(b, 10, 10, 100, 100);
 		
-		};	
+		};
 	}	 
 		
 	var canvas = document.getElementById("canvas1"); 
