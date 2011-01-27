@@ -5,96 +5,105 @@ $(function() {
 		var P = processing;
 		var b = P.PImage;
 		var bgcolor = 222;
-		var circle;
-		
-		/* DEFAULT SETUP FUNCTION */
-		P.setup = function() {
-			P.size(1024, 768);
-  			// @pjs preload must be used to preload the image
-   			/* @pjs preload="/images/CN70_360Tour_025T.jpg"; */
-    		b = P.loadImage("/images/CN70_360Tour_025T.jpg");
-		}
+		var displayObjs = new Array();
+		var mousePressed = false;
 		
 		/* SKETCH OBJECTS */
-		function CircleObj() {
+		function CircleObj(options) {
 			var self = this;
-			this.cRadius = 40;
-			this.hover = false;
-			this.cX = 0;
-			this.cY = 0;
+			//Defaults
+			this.defaults = {
+				radius: 80,
+				hover: false,
+				drag: false,
+				posX: 0,
+				posY: 0
+			}
+			//Extend the default options obj
+			this.options = $.extend(true, {}, self.defaults, options);
 			
 			this.init = function() {
 				self.display();
-				self.detectHover();
 			}
 			
 			this.display = function() {
 				//Draw a circle
 				P.strokeWeight(2);
-				P.ellipse(self.cX, self.cY, self.cRadius, self.cRadius);
+				P.ellipse(self.options.posX, self.options.posY, self.options.radius, self.options.radius);
+				self.detectHover();
+				self.detectDrag();
 			}
 			
 			this.detectHover = function() {
-				if (P.mouseX > self.cX-self.cRadius && P.mouseX < self.cX+self.cRadius && P.mouseY > self.cY-self.cRadius && P.mouseY < self.cY+self.cRadius) {
+				if (P.mouseX > self.options.posX-self.options.radius && P.mouseX < self.options.posX+self.options.radius && P.mouseY > self.options.posY-self.options.radius && P.mouseY < self.options.posY+self.options.radius) {
+					self.options.hover = true;
 					self.mouseOver();
 				} else {
+					self.options.hover = false;
 					self.mouseOut();
 				}
 			}
 			
+			this.detectDrag = function() {
+				if (mousePressed && self.options.hover || mousePressed && self.options.drag) {
+					self.options.drag = true;
+					self.mouseDrag();
+				} else {
+					self.options.drag = false;
+				}
+			}
+			
 			this.mouseOver = function() {
-				console.log('mouseover');
+				
 			}
 			
 			this.mouseOut = function() {
-				console.log('mouseout');
+				
 			}
+			
+			this.mouseDrag = function() {
+				self.options.posX = P.mouseX;
+				self.options.posY = P.mouseY;
+			}
+			
+			
 			
 			this.init();
 		}
-		circle = new CircleObj();
+		
+		/* DEFAULT SETUP FUNCTION */
+		P.setup = function() {
+			P.size(1024, 768);
+			P.mousePressed = function() {
+				mousePressed = true
+			}
+			
+			P.mouseReleased = function() {
+				mousePressed = false;
+			}
+			
+			displayObjs.push(new CircleObj());
+			displayObjs.push(new CircleObj({posX: 50, radius: 200}));
+			
+  			// @pjs preload must be used to preload the image
+   			/* @pjs preload="/images/CN70_360Tour_025T.jpg"; */
+    		b = P.loadImage("/images/CN70_360Tour_025T.jpg");
+		}
+		
 		/* DEFAULT DRAW FUNCTION (loops every 60sec by default) */	 
 		P.draw = function() {
-			circle.display();
-			// Reset bg
+			//Background
 			P.background(bgcolor);
-			//Detect hover
 			
-			
-			/*
-if (hover) {
-				if (cRadius <= 70) {
-					cRadius = cRadius + 4;
-				}
-			} else {
-				if (cRadius >= 40) {
-					cRadius = cRadius - 1;
-				}
-			}
-*/
-			
-			P.mouseDragged = function() {
-				cX = P.mouseX;
-				cY = P.mouseY;
-			}
-			
-			P.mouseClicked = function() {
-				if (hover) {
-					alert('clicked');
-				}
-			}
-			//cRadius = cX * 1;
-			/* var stroke = cY / 2; */
-		
-			//Draw a circle
-			//P.strokeWeight(2);
-			//P.ellipse(cX, cY, cRadius, cRadius);
+			//Loop through and display objs
+			for (i in displayObjs) {
+		  		displayObjs[i].display();
+		 	}
 			
 			//Draw image
 			P.tint(255, 128);
    			P.image(b, 10, 10);
     		P.image(b, 10, 10, 100, 100);
-		
 		};
 	}	 
 		
